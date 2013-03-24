@@ -7,17 +7,14 @@
 
 class TcpSocket {
 
-	// an abstract superclass, defines everything but send methods
 	public:
-		TcpSocket(int domain=AF_INET) throw (int);
-		bool connect(char *ip, unsigned short port) throw (const char *);
-		int bind;	
-		int listen;	
-	private:
+		TcpSocket(int family=AF_INET) throw (int);
+		virtual int send(void *data, int size);
+		virtual int receive(void *data, int size);
+
+	protected:
 		int sock_fd;
-		unsigned short port;
-		char *ip;
-		int domain;
+		int family;
 };
 
 #endif

@@ -27,9 +27,11 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <cstring>
 #include <fstream>
+#include "TcpServer.h"
 
 using namespace std;
 
@@ -45,45 +47,36 @@ void usage() {
 }
 
 int main(int argc, char** argv) {
+
 	if(argc != 2) {
 		usage();
 		return 0;
 	}
 
-	// Expect to receive size of object, then read that number of bytes
-	struct sockaddr_in client_addr, server_addr;
-	socklen_t client_len = sizeof(client_addr);
-
-
-	// check for failure
-	int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+	TcpServer server;
 	
-	// clear address structure
-	memset(&server_addr, 0, sizeof(server_addr));
-	
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(1234);
-
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	// check for value >= 0
-	bind(listen_fd, (sockaddr *) &server_addr, sizeof(server_addr));
-
-	listen(listen_fd, 100); // should be >= 0, 100 pending clients
+	// listen on user-supplied port
+	// TODO handle bad parameters?
+	server.listen(atoi(argv[1]));
 
 	// connection loop
 	char buffer[10];
 	while(true) {
 
-		int connection = accept(listen_fd, 
-								(sockaddr *)&client_addr, 
-								&client_len);
-
-		read(connection, buffer, 3);
-		printf("%s\n", buffer);
+		if(server.accept()) {
+			
+			// process request
+			// server_socket.write();
+			// server_socket.read();
+			/*
+		read(connection, buffer, 4);
+		cout << buffer << endl;
 
 		close(connection);
-	}
+		*/
 
+		}
+
+	}
 	return 0;
 }

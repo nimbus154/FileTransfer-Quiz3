@@ -8,47 +8,37 @@
 
 /**
  * Creates a TCP socket
- * @param ip - IP address of target machine
- * @param port - port on which to connect 
- * @param domain - socket family type, optional. Defaults to AF_INET.
+ * @param family - socket family type, optional. Defaults to AF_INET.
  * @throws system call errno on socket creation
  */
-TcpSocket::TcpSocket(int domain)
-	throw (int) {
+TcpSocket::TcpSocket(int family)
+	throw (int) : family(family) {
 
-	this->domain = domain;
-	sock_fd = socket(domain, SOCK_STREAM, 0);
+	sock_fd = socket(family, SOCK_STREAM, 0);
 
 	if(sock_fd < 0) {
 		throw errno;
 	}
 }
 
+/**
+ * Send data to other end of socket
+ * @param data - data to send
+ * @param size - number of bytes to send
+ * @return number of bytes sent
+ */
+int TcpSocket::send(void *data, int size) {
 
-bool TcpSocket::connect(char *ip, unsigned short port) 
-	throw (const char *){
-	
-	// specify server IP and port
-	struct sockaddr_in server_addr;
-
-	// clear address structure
-	memset(&server_addr, 0, sizeof(server_addr));
-	
-	server_addr.sin_family = this->domain;
-	server_addr.sin_port = htons(port);
-
-	// set IP
-	int inet_result = inet_pton(AF_INET, ip, &server_addr.sin_addr);
-
-	if(inet_result == 0) {
-		throw "Invalid address format";
-	}
-	else if(inet_result < 0) {
-		throw "Error converting IP to binary";
-	}
-
-	return ::connect(sock_fd, (sockaddr*)&server_addr, sizeof(sockaddr)) >= 0;
+	return write(sock_fd, data, size);
 }
 
+/**
+ * Receive data from other end of socket
+ * @param data - buffer in which to store data
+ * @param size - max number of bytes to store
+ * @return number of bytes sent
+ */
+int TcpSocket::receive(void *data, int size) {
 
-
+	return read(sock_fd, data, size);
+}
