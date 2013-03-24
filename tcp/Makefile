@@ -1,10 +1,10 @@
 all: client server
 
-client:
+client: client.cpp
 	g++ client.cpp -o client 
 
-server:
+server: server.cpp
 	g++ server.cpp -o server 
 
 clean:
-	rm server client
+	rm -rf server client
