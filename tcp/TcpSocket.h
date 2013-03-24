@@ -9,7 +9,7 @@ class TcpSocket {
 
 	// an abstract superclass, defines everything but send methods
 	public:
-		TcpSocket(/*int domain=AF_INET*/) throw (int);
+		TcpSocket(int domain=AF_INET) throw (int);
 		bool connect(char *ip, unsigned short port) throw (const char *);
 		int bind;	
 		int listen;	

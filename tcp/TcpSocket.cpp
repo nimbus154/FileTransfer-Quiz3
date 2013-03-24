@@ -13,10 +13,9 @@
  * @param domain - socket family type, optional. Defaults to AF_INET.
  * @throws system call errno on socket creation
  */
-TcpSocket::TcpSocket()//int domain)
+TcpSocket::TcpSocket(int domain)
 	throw (int) {
 
-	int domain = AF_INET;
 	this->domain = domain;
 	sock_fd = socket(domain, SOCK_STREAM, 0);
 
@@ -50,4 +49,6 @@ bool TcpSocket::connect(char *ip, unsigned short port)
 
 	return ::connect(sock_fd, (sockaddr*)&server_addr, sizeof(sockaddr)) >= 0;
 }
+
+
 
