@@ -49,15 +49,14 @@ int main(int argc, char** argv) {
 	TcpClient client;
 	string filename(argv[3]);
 	// connect on IP and port
-	client.connect(argv[1], atoi(argv[2]));
+	if(client.connect(argv[1], atoi(argv[2]))) {
 
-	/*
-	int size = filename.size();
-	write(sock_fd, (void*) &size, sizeof(filename.size()));
-	write(sock_fd, filename.c_str(), filename.size());
-	
-	// transfer size of object, then object
-	// e.g. size of filename, then filename
-	*/
+		cout << "Connected! Sending data..." << endl;
+		client.send("yo!", 3);
+	}
+	else {
+		cout << "Unable to connect -- is the IP and port correct?\n";
+	}
+
 	return 0;
 }

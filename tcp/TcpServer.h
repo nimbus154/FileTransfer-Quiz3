@@ -5,13 +5,13 @@
 #define TCP_SERVER
 #include "TcpSocket.h"
 
-class TcpServer : TcpSocket {
+class TcpServer : public TcpSocket {
 
 	public:
 		TcpServer(int domain=AF_INET) throw (int);
-		bool listen(unsigned short port, long address=INADDR_ANY);
+		void listen(unsigned short port, long address=INADDR_ANY) throw (int);
 		bool accept();
-		int send(void *data, int size);
+		int send(const void *data, int size);
 		int receive(void *data, int size);
 		void close() throw (int);
 

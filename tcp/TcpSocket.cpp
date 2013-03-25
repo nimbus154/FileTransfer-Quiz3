@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <iostream>
 #include <unistd.h>
 #include "TcpSocket.h"
 
@@ -25,9 +26,11 @@ TcpSocket::TcpSocket(int family)
  * @param size - number of bytes to send
  * @return number of bytes sent
  */
-int TcpSocket::send(void *data, int size) {
+int TcpSocket::send(const void *data, int size) {
 
-	return write(sock_fd, data, size);
+	if(write(sock_fd, data, size) == -1)
+		std::cerr << "Unable to write!\n";
+	return 0;
 }
 
 /**

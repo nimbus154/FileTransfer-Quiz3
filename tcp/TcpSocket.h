@@ -9,7 +9,7 @@ class TcpSocket {
 
 	public:
 		TcpSocket(int family=AF_INET) throw (int);
-		virtual int send(void *data, int size);
+		virtual int send(const void *data, int size);
 		virtual int receive(void *data, int size);
 
 	protected:

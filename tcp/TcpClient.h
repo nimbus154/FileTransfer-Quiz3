@@ -5,7 +5,7 @@
 #define TCP_CLIENT
 #include "TcpSocket.h"
 
-class TcpClient : TcpSocket {
+class TcpClient : public TcpSocket {
 
 	public:
 		TcpClient(int domain=AF_INET) throw (int);

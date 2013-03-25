@@ -20,7 +20,8 @@ TcpServer::TcpServer(int family)
  * @param ip - (optional) IP address to listen on, default to any
  * @returns true if successfully listening
  */
-bool TcpServer::listen(unsigned short port, long address) {
+void TcpServer::listen(unsigned short port, long address) 
+	throw (int) {
 
 	struct sockaddr_in server_addr;
 
@@ -32,10 +33,13 @@ bool TcpServer::listen(unsigned short port, long address) {
 
 	server_addr.sin_addr.s_addr = htonl(address);
 
-	// TODO check for value >= 0
-	bind(sock_fd, (sockaddr *) &server_addr, sizeof(server_addr));
+	if(bind(sock_fd, (sockaddr *) &server_addr, sizeof(server_addr)) <0) {
+		throw errno;
+	}
 
-	::listen(sock_fd, 100); // TODO should be >= 0, 100 pending clients
+	if(::listen(sock_fd, 100)) {
+		throw errno;
+	}
 }
 
 /**
@@ -46,8 +50,8 @@ bool TcpServer::accept() {
 
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
-
-	return ::accept(sock_fd, (sockaddr *)&client_addr, &client_len) >= 0;
+	client_fd = ::accept(sock_fd, (sockaddr *)&client_addr, &client_len);
+	return client_fd >= 0;
 }
 
 /**
@@ -56,7 +60,7 @@ bool TcpServer::accept() {
  * @param size - number of bytes to send
  * @return number of bytes sent
  */
-int TcpServer::send(void *data, int size) {
+int TcpServer::send(const void *data, int size) {
 
 	return write(client_fd, data, size);
 }

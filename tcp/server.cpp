@@ -64,19 +64,10 @@ int main(int argc, char** argv) {
 	while(true) {
 
 		if(server.accept()) {
-			
-			// process request
-			// server_socket.write();
-			// server_socket.read();
-			/*
-		read(connection, buffer, 4);
-		cout << buffer << endl;
-
-		close(connection);
-		*/
-
+			server.receive(buffer, 3);
+			cout << buffer << endl;
+			// server.close();
 		}
-
 	}
 	return 0;
 }
