@@ -1,9 +1,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
 #include <errno.h>
-#include <cstring>
-#include <string>
+#include <unistd.h>
+#include <cstring> // memset
 #include "TcpServer.h"
 
 /**
@@ -71,4 +70,15 @@ int TcpServer::send(void *data, int size) {
 int TcpServer::receive(void *data, int size) {
 
 	return read(client_fd, data, size);
+}
+
+/**
+ * Close current client connection
+ * @throws errno - error number corresponding to reason for failure
+ */
+void TcpServer::close() throw (int){
+
+	if(::close(client_fd) < 0) {
+		throw errno;
+	}
 }

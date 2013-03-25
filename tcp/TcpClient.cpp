@@ -1,9 +1,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <cstring>
-#include <string>
+#include <cstring> // memset
 #include "TcpClient.h"
 
 /**

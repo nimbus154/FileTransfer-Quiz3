@@ -13,6 +13,7 @@ class TcpServer : TcpSocket {
 		bool accept();
 		int send(void *data, int size);
 		int receive(void *data, int size);
+		void close() throw (int);
 
 	private:
 		// fd of connected client
