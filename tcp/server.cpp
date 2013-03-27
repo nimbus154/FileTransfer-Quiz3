@@ -33,18 +33,12 @@
 #include <fstream>
 #include "TcpServer.h"
 
+#define STREAM_SIZE 256
+
 using namespace std;
 
-/**
- * Display directions for how to use the program
- */
-void usage() {
-	cout << "This is a simple TCP server for transferring files.\n"
-		<< "To listen: \n\n"
-		<< "\tserver <port>\n\n"
-		<< "For example:\n"
-		<< "\tserver 1234\n";
-}
+void usage();
+void accept_connections(TcpServer &server, char *buffer);
 
 int main(int argc, char** argv) {
 
@@ -52,22 +46,47 @@ int main(int argc, char** argv) {
 		usage();
 		return 0;
 	}
-
-	TcpServer server;
 	
 	// listen on user-supplied port
 	// TODO handle bad parameters?
+	TcpServer server;
 	server.listen(atoi(argv[1]));
 
-	// connection loop
-	char buffer[10];
-	while(true) {
+	char buffer[STREAM_SIZE];
+	accept_connections(server, buffer);
 
+	return 0;
+}
+
+/**
+ * Display directions for how to use the program
+ */
+void usage() {
+
+	cout << "This is a simple TCP server for transferring files.\n"
+		<< "To listen: \n\n"
+		<< "\tserver <port>\n\n"
+		<< "For example:\n"
+		<< "\tserver 1234\n";
+}
+
+/**
+ * Connection loop
+ */
+void accept_connections(TcpServer &server, char *buffer) {
+	// TODO deserialize integer and send values
+	while(true) {
 		if(server.accept()) {
-			server.receive(buffer, 3);
+			// by convention, first thing received is number of bytes
+			server.receive(buffer, sizeof(int));
+			int bytes_to_receive = atoi(buffer);
+
+			// now, we receive the data
+			// TODO handle bytes longer than buffer
+			server.receive(buffer, bytes_to_receive);
+			buffer[bytes_to_receive] = '\0';
 			cout << buffer << endl;
-			// server.close();
+			server.close();
 		}
 	}
-	return 0;
 }

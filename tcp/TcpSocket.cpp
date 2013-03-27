@@ -28,9 +28,7 @@ TcpSocket::TcpSocket(int family)
  */
 int TcpSocket::send(const void *data, int size) {
 
-	if(write(sock_fd, data, size) == -1)
-		std::cerr << "Unable to write!\n";
-	return 0;
+	return write(sock_fd, data, size);
 }
 
 /**
