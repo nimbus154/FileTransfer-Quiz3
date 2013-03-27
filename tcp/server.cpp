@@ -31,17 +31,19 @@
 #include <string>
 #include <cstring>
 #include <fstream>
+#include <algorithm>
 #include "TcpServer.h"
 
 #define STREAM_SIZE 256
+#define HANG_UP 2
 
 using namespace std;
 
 void usage();
 void accept_connections(TcpServer &server, char *buffer);
-void fetch_data(char *data, TcpServer &server);
-bool is_hangup(char *buffer);
-
+int fetch_data(char *data, TcpServer &server);
+bool create_file(char *filename, ofstream &file);
+bool file_exists(string &filename);
 
 int main(int argc, char** argv) {
 
@@ -51,7 +53,6 @@ int main(int argc, char** argv) {
 	}
 	
 	// listen on user-supplied port
-	// TODO handle bad parameters?
 	TcpServer server;
 	server.listen(atoi(argv[1]));
 
@@ -77,38 +78,70 @@ void usage() {
  * Connection loop
  */
 void accept_connections(TcpServer &server, char *buffer) {
-	// TODO deserialize integer and send values
+
 	while(true) {
 		if(server.accept()) {
 			// clear old data
 			memset(buffer, 0 , STREAM_SIZE);
 
 			// by convention, first thing received is number of bytes
-			// TODO receive filename, handle if file has same name in fdirectory
-			fetch_data(buffer, server);
-			cout << buffer << endl; // TODO create file
+			int bytes_read = fetch_data(buffer, server);
+			ofstream output_file;
+			create_file(buffer, output_file);
 
 			// now, we receive the data
-			while(!is_hangup(buffer)) {
-				fetch_data(buffer, server);
-				cout << buffer << endl;
+			int received_zero = 0;
+			int total_received = bytes_read;
+
+			while(received_zero < HANG_UP) {
+				bytes_read = fetch_data(buffer, server);
+				output_file.write(buffer, bytes_read);
+				total_received += bytes_read;
+				cout << "Received " << total_received << " bytes\n";
+
+				if(bytes_read == 0) {
+					received_zero++;
+				}
 			}
+
 			cout << "Hangup received\n";
+			output_file.close();
 		}
 	}
 }
 
-void fetch_data(char *buffer, TcpServer &server) {
+int fetch_data(char *buffer, TcpServer &server) {
 
 	server.receive(buffer, sizeof(int));
 	int bytes_to_receive = atoi(buffer);
-	// TODO handle bytes longer than buffer
-
 	server.receive(buffer, bytes_to_receive);
-	buffer[bytes_to_receive] = '\0';
+	return bytes_to_receive;
 }
 
-bool is_hangup(char *buffer) {
+bool create_file(char *filename, ofstream &file) {
 
-	return strcmp(buffer, "\0\0") == 0;
+	string original = string(filename);
+	string new_file_name = string(filename);
+
+	// find a unique filename
+	int name_addition = 1;
+	while(file_exists(new_file_name)) {
+
+		new_file_name = original + to_string(name_addition);
+		name_addition++;
+	}
+
+	file.open(new_file_name, ios::binary);
+}
+
+/**
+ * Check if a file with a certain name already exists
+ * @param filename - name of file to check
+ * @return true if a file with that name already exists
+ */
+bool file_exists(string &filename) {
+	// I stole this simple function from
+	// http://www.cplusplus.com/forum/general/1796/
+	ifstream file(filename);
+	return file;
 }

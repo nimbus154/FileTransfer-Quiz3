@@ -15,7 +15,7 @@ TcpSocket::TcpSocket(int family)
 
 	sock_fd = socket(family, SOCK_STREAM, 0);
 
-	if(sock_fd < 0) {
+	if(sock_fd < 0) { 
 		throw errno;
 	}
 }
