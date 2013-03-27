@@ -82,20 +82,22 @@ void send_file(ifstream &file, string &filename,
 	if(client.connect(ip, port)) {
 		cout << "Connected! Sending file..." << endl;
 
-		// TODO send filename
 		char data[STREAM_SIZE];
-		int chars_read;
+		filename.copy(data, STREAM_SIZE);
+		data[filename.size()] = '\0';
+		int chars_read = filename.size() + 1;
 
 		// read data from file
 		while(file.good()) {
-			file.get(data, STREAM_SIZE);
-			chars_read = file.gcount();
 
 			if(!send_bytes(&data, chars_read, client)) {
 				cerr << "Send failed!\n";
+				cout << "fail\n";
 				return;
 			}
-			cout << chars_read << " bytes sent!\n";
+
+			file.get(data, STREAM_SIZE);
+			chars_read = file.gcount();
 		}
 		hangup(client);
 	}
@@ -124,4 +126,5 @@ bool send_bytes(void *data, int length, TcpClient &client) {
 void hangup(TcpClient &client) {
 
 	cout << "Hanging up!\n";
+	client.send("\0\0", 2);
 }

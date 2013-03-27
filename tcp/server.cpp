@@ -39,6 +39,9 @@ using namespace std;
 
 void usage();
 void accept_connections(TcpServer &server, char *buffer);
+void fetch_data(char *data, TcpServer &server);
+bool is_hangup(char *buffer);
+
 
 int main(int argc, char** argv) {
 
@@ -77,16 +80,35 @@ void accept_connections(TcpServer &server, char *buffer) {
 	// TODO deserialize integer and send values
 	while(true) {
 		if(server.accept()) {
+			// clear old data
+			memset(buffer, 0 , STREAM_SIZE);
+
 			// by convention, first thing received is number of bytes
-			server.receive(buffer, sizeof(int));
-			int bytes_to_receive = atoi(buffer);
+			// TODO receive filename, handle if file has same name in fdirectory
+			fetch_data(buffer, server);
+			cout << buffer << endl; // TODO create file
 
 			// now, we receive the data
-			// TODO handle bytes longer than buffer
-			server.receive(buffer, bytes_to_receive);
-			buffer[bytes_to_receive] = '\0';
-			cout << buffer << endl;
-			server.close();
+			while(!is_hangup(buffer)) {
+				fetch_data(buffer, server);
+				cout << buffer << endl;
+			}
+			cout << "Hangup received\n";
 		}
 	}
+}
+
+void fetch_data(char *buffer, TcpServer &server) {
+
+	server.receive(buffer, sizeof(int));
+	int bytes_to_receive = atoi(buffer);
+	// TODO handle bytes longer than buffer
+
+	server.receive(buffer, bytes_to_receive);
+	buffer[bytes_to_receive] = '\0';
+}
+
+bool is_hangup(char *buffer) {
+
+	return strcmp(buffer, "\0\0") == 0;
 }
