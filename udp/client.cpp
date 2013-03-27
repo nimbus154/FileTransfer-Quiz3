@@ -22,10 +22,11 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include "TcpClient.h"
+#include "ReliableUdpClient.h"
 
 #define STREAM_SIZE 256
 #define HANG_UP 2
+#define RETRIES 5
 
 using namespace std;
 
@@ -34,9 +35,11 @@ void usage();
 void send_file(ifstream &file, string &filename, 
 				char *ip, unsigned short port);
 
-bool send_bytes(void *data, int size, TcpClient &client);
+bool send_bytes(const void *data, int size, ReliableUdpClient &client);
 
-void hangup(TcpClient &client);
+void hangup(ReliableUdpClient &client);
+
+bool send_or_timeout(const void *data, int length, ReliableUdpClient &client);
 
 int main(int argc, char** argv) {
 
@@ -79,41 +82,35 @@ void usage() {
 void send_file(ifstream &file, string &filename, 
 				char *ip, unsigned short port) {
 
-	TcpClient client;
-	if(client.connect(ip, port)) {
-		cout << "Connected! Sending file..." << endl;
+	ReliableUdpClient client(ip, port);
+	cout << "Sending file..." << endl;
 
-		int sent = 0;
-		char data[STREAM_SIZE];
+	int sent = 0;
+	char data[STREAM_SIZE];
 
-		filename.copy(data, STREAM_SIZE);
-		data[filename.size()] = '\0';
+	filename.copy(data, STREAM_SIZE);
+	data[filename.size()] = '\0';
 
-		int chars_read = filename.size() + 1;
+	int chars_read = filename.size() + 1;
+
+	if(!send_bytes(&data, chars_read, client)) {
+		return;
+	}
+	sent+= chars_read;
+
+	// read data from file
+	while(file.good()) {
+		file.read(data, STREAM_SIZE);
+		chars_read = file.gcount();
+		sent += chars_read;
+		cout << "Sent " << sent << " bytes\n";
 
 		if(!send_bytes(&data, chars_read, client)) {
+			hangup(client);
 			return;
 		}
-		sent+= chars_read;
-
-		// read data from file
-		while(file.good()) {
-			file.read(data, STREAM_SIZE);
-			chars_read = file.gcount();
-			sent += chars_read;
-			cout << "Sent " << sent << " bytes\n";
-
-			if(!send_bytes(&data, chars_read, client)) {
-				cerr << "Encountered an error sending!\n";
-				hangup(client);
-				return;
-			}
-		}
-		hangup(client);
 	}
-	else {
-		cout << "Unable to connect -- is the IP and port correct?\n";
-	}
+	hangup(client);
 }
 
 
@@ -124,18 +121,30 @@ void send_file(ifstream &file, string &filename,
  * @param client - reference to client to use to send data
  * @returns true if send succeeded
  */
-bool send_bytes(void *data, int length, TcpClient &client) {
+bool send_bytes(const void *data, int length, ReliableUdpClient &client) {
 
-	return client.send(to_string(length).c_str(), sizeof(length)) != -1
-			&& client.send(data, length) != -1;
+	// send number of bytes
+	// then send data
+	return send_or_timeout(to_string(length).c_str(), sizeof(length), client)
+		&& send_or_timeout(data, sizeof(length), client);
+}
+
+/**
+ * Attempt to send data within a certain time
+ */
+bool send_or_timeout(const void *data, int length, ReliableUdpClient &client) {
+
+	int tries = 0;
+	while(client.send(data, length) && tries++ < RETRIES);
+	return tries < RETRIES; 
 }
 
 /**
  * Signal end of data and close connection
  */
-void hangup(TcpClient &client) {
+void hangup(ReliableUdpClient &client) {
 
 	for(int i = 0; i < HANG_UP; i++) {
-		client.send("", 0);
+		send_or_timeout("", 0, client);
 	}
 }
