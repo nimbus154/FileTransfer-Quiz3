@@ -1,54 +1,49 @@
+#include <cstring>
+#include <string>
 #include "ReliableUdpServer.h"
+#define SEND_ERROR -2
+#define RECEIVE_ERROR -1
 
 ReliableUdpServer::ReliableUdpServer(unsigned short port, long address, int family) 
 	throw (int) : UdpSocket(family) {
 	
-	sockaddr_in servaddr, cliaddr;
-	socklen_t sockaddr_in_len = 0;
-		
-	memset(&servaddr, 0, sizeof(servaddr));
+	sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
 	
-	servaddr.sin_family = family;
-   	servaddr.sin_addr.s_addr = htonl(address);
-	servaddr.sin_port = htons(port);
+	server_addr.sin_family = family;
+   	server_addr.sin_addr.s_addr = htonl(address);
+	server_addr.sin_port = htons(port);
 	
-	if(bind(sock_fd,(sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+	if(bind(sock_fd,(sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
 		throw errno;
 	}
 }	
 
+/**
+ * Wait to receive data from client
+ * @param buffer - buffer in which to store data
+ * @param buffer_length - size of the buffer
+ * @returns number of bytes read, -1 on error
+ */
 int ReliableUdpServer::receive(void *buffer, int buffer_length) {
 
-	// TODO implement
+	sockaddr_in client_addr;
+	socklen_t sockaddr_in_len = sizeof(client_addr);	
+	
 	// block until data received
-	// send response to client that we received x bytes
-	// return number of bytes received
-	/* Get the size of the client address data structure */
-	sockaddr_in_len = sizeof(cliaddr);	
-	
-	/* Get something from the client; Will block until the client
-	 * sends. 
-	 */
-	if((numRecv = recvfrom(socketfd, recvBuff, MAX_RECV_SIZE, 0, 
-		(sockaddr *)&cliaddr, &sockaddr_in_len)) < 0)
-	{
-		perror("recvfrom");
-		exit(-1);
+	int received = recvfrom(sock_fd, buffer, buffer_length, 0, 
+						   (sockaddr *)&client_addr, &sockaddr_in_len);
+	if(received < 0) {
+		return RECEIVE_ERROR;
 	}
-	
-	fprintf(stdout, "Received string: '%s' from the client\n", recvBuff);
-	fflush(stdout);
-	
 		
-	/* Retrieve the time */
-	numSent = snprintf(sendBuff, MAX_SEND_SIZE, "%lu", (unsigned long)time(NULL));
-	
-	/* Send the time to the client */
-	if((numSent = sendto(socketfd, sendBuff, numSent, 0,
-		(sockaddr *)&cliaddr,sizeof(cliaddr))) < 0)
-	{
-		perror("sendto");
-		exit(-1);
+	// send response to client that we received x bytes
+	std::string bytes_received = std::to_string(received);
+	int sent = sendto(sock_fd, bytes_received.c_str(), bytes_received.size(), 
+					 0, (sockaddr *)&client_addr, sockaddr_in_len);
+	if(sent < 0) {
+		return SEND_ERROR;
 	}
-}
+
+	return received;
 }	

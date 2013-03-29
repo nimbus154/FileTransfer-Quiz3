@@ -4,8 +4,9 @@
 class UdpSocket {
 	public:
 		UdpSocket(int family = AF_INET) throw (int);
-	private:
+	protected:
 		int sock_fd;
+	private:
 		int family;
 };
 #endif
