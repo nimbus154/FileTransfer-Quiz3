@@ -100,6 +100,9 @@ void receive(ReliableUdpServer &server, char *buffer) {
 				if(bytes_received == 0) {
 					received_zero++;
 				}
+				else {
+					received_zero = 0;
+				}
 			}
 
 			cout << "Hangup received\n";

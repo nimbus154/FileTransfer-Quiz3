@@ -1,8 +1,10 @@
 #include "ReliableUdpClient.h"
 
-ReliableUdpClient::ReliableUdpClient(char *ip, unsigned short port) {
+ReliableUdpClient::ReliableUdpClient(char *ip, unsigned short port, int family) 
+	throw (int) : UdpSocket(family) {
 	
 	// TODO implement
+	
 }
 
 bool ReliableUdpClient::send(const void *dadta, int length) {
