@@ -6,6 +6,10 @@ class ReliableUdpClient:UdpSocket {
 	public:
 		ReliableUdpClient(char *ip, unsigned short port, int family = AF_INET)
 			throw (int);
-		bool send(const void *data, int length);
+		bool send(const void *data, int length) throw (int);
+	private:
+		// details about server to which client will connect
+		sockaddr_in server_addr;
+		socklen_t server_addr_len;
 };
 #endif

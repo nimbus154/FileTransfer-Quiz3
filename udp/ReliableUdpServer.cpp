@@ -1,8 +1,6 @@
 #include <cstring>
 #include <string>
 #include "ReliableUdpServer.h"
-#define SEND_ERROR -2
-#define RECEIVE_ERROR -1
 
 ReliableUdpServer::ReliableUdpServer(unsigned short port, long address, int family) 
 	throw (int) : UdpSocket(family) {
@@ -19,9 +17,7 @@ ReliableUdpServer::ReliableUdpServer(unsigned short port, long address, int fami
 	}
 }	
 
-/**
- * Wait to receive data from client
- * @param buffer - buffer in which to store data
+/** * Wait to receive data from client * @param buffer - buffer in which to store data
  * @param buffer_length - size of the buffer
  * @returns number of bytes read, -1 on error
  */
