@@ -2,14 +2,26 @@
 
 File transfer using TCP and UDP. Quiz/homework assignment for CPSC 471: Networking.
 
+## Notes
 
-## Motivation
+### General
+To test transferring text files, use "keats.txt". To test transferring binary
+files, I used the client ("./client 127.0.0.1 1234 client").
+
+### UDP Implementation Notes
+The server does not handle the following cases:
+* Multiple connections
+* Packets received in wrong order
+
+## Assignment Directions
+
+### Motivation
 In this exercise you will develop a simple network application, in which the
 client transfers a locally stored file to the server. This will give you
 hands-on experience with TCP socket programming and will help you prepare for
 the midterm and assignment 2.
 
-### The client
+#### The client
 
 The client program shall be invoked using the following command line:
 ```bash
@@ -35,7 +47,7 @@ When invoked, the client shall do the following:
 
 4. Close the connection and exit.
 
-### The Server
+#### The Server
 
 The server shall be invoked using the following command line:
 
@@ -67,7 +79,7 @@ When invoked, the server shall do the following:
 
 6. Close the connection and go back to waiting for more connections.
 
-### Hints
+#### Hints
 Prior to transmitting the name of the file, you may want your client to, first,
 transmit the size of the file name e.g. file name "HelloWorld" is of size 10.
 The server will receive the size of the file name, 10, and then wait to receive
@@ -75,7 +87,7 @@ The server will receive the size of the file name, 10, and then wait to receive
 
  
 
-## Submission:
+### Submission:
 You may work in groups of 3.
 
 Please upload your files in response to this question.
