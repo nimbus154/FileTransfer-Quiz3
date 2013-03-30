@@ -2,7 +2,7 @@
 #define RELIABLE_UDP_SERVER
 #include "UdpSocket.h"
 #include <arpa/inet.h>
-class ReliableUdpServer:UdpSocket {
+class ReliableUdpServer : public UdpSocket {
 	public:
 		ReliableUdpServer(unsigned short port, 
 						  long address = INADDR_ANY, 

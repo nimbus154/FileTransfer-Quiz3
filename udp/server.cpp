@@ -43,6 +43,7 @@ void usage();
 void receive(ReliableUdpServer &server, char *buffer);
 bool create_file(char *filename, ofstream &file);
 bool file_exists(string &filename);
+int fetch_data(char *buffer, ReliableUdpServer &server);
 
 int main(int argc, char** argv) {
 
@@ -82,7 +83,7 @@ void receive(ReliableUdpServer &server, char *buffer) {
 		memset(buffer, 0 , STREAM_SIZE);
 
 		int bytes_received = 0;
-		if((bytes_received = server.receive(buffer, STREAM_SIZE)) > 0) {
+		if((bytes_received = fetch_data(buffer, server))) {
 			// by convention, first thing received is the filename
 			ofstream output_file;
 			create_file(buffer, output_file);
@@ -92,7 +93,7 @@ void receive(ReliableUdpServer &server, char *buffer) {
 			int total_received = bytes_received;
 
 			while(received_zero < HANG_UP) {
-				bytes_received = server.receive(buffer, STREAM_SIZE);
+				bytes_received = fetch_data(buffer, server);
 				output_file.write(buffer, bytes_received);
 				total_received += bytes_received;
 				cout << "Received " << total_received << " bytes\n";
@@ -109,6 +110,16 @@ void receive(ReliableUdpServer &server, char *buffer) {
 			output_file.close();
 		}
 	}
+}
+
+int fetch_data(char *buffer, ReliableUdpServer &server) {
+
+	// receive data size
+	server.receive(buffer, sizeof(int));
+	int bytes_to_receive = atoi(buffer);
+	// receive data
+	int received = server.receive(buffer, bytes_to_receive);
+	return bytes_to_receive;
 }
 
 bool create_file(char *filename, ofstream &file) {

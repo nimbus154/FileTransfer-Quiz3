@@ -2,7 +2,7 @@
 #define RELIABLE_UDP_CLIENT
 #include "UdpSocket.h"
 #include <arpa/inet.h>
-class ReliableUdpClient:UdpSocket {
+class ReliableUdpClient: public UdpSocket {
 	public:
 		ReliableUdpClient(char *ip, unsigned short port, int family = AF_INET)
 			throw (int);

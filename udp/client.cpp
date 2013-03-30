@@ -94,6 +94,7 @@ void send_file(ifstream &file, string &filename,
 	int chars_read = filename.size() + 1;
 
 	if(!send_bytes(&data, chars_read, client)) {
+		cerr << "Send failed\n";
 		return;
 	}
 	sent+= chars_read;
@@ -106,6 +107,7 @@ void send_file(ifstream &file, string &filename,
 		cout << "Sent " << sent << " bytes\n";
 
 		if(!send_bytes(&data, chars_read, client)) {
+			cerr << "Send failed\n";
 			hangup(client);
 			return;
 		}
@@ -123,10 +125,8 @@ void send_file(ifstream &file, string &filename,
  */
 bool send_bytes(const void *data, int length, ReliableUdpClient &client) {
 
-	// send number of bytes
-	// then send data
 	return send_or_timeout(to_string(length).c_str(), sizeof(length), client)
-		&& send_or_timeout(data, sizeof(length), client);
+		&& send_or_timeout(data, length, client);
 }
 
 /**
@@ -135,7 +135,7 @@ bool send_bytes(const void *data, int length, ReliableUdpClient &client) {
 bool send_or_timeout(const void *data, int length, ReliableUdpClient &client) {
 
 	int tries = 0;
-	while(client.send(data, length) && tries++ < RETRIES);
+	while(!client.send(data, length) && tries++ < RETRIES);
 	return tries < RETRIES; 
 }
 
@@ -144,7 +144,8 @@ bool send_or_timeout(const void *data, int length, ReliableUdpClient &client) {
  */
 void hangup(ReliableUdpClient &client) {
 
-	for(int i = 0; i < HANG_UP; i++) {
-		send_or_timeout("", 0, client);
+	// Make it repeat a whole bunch of times, to ensure it was received
+	for(int i = 0; i < (HANG_UP * 5); i++) {
+		send_or_timeout("\0", 1, client);
 	}
 }

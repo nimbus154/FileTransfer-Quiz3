@@ -1,5 +1,7 @@
 #include <cstring>
 #include <string>
+#include <errno.h>
+#include <iostream>
 #include "ReliableUdpServer.h"
 
 ReliableUdpServer::ReliableUdpServer(unsigned short port, long address, int family) 
@@ -32,7 +34,7 @@ int ReliableUdpServer::receive(void *buffer, int buffer_length) {
 	if(received < 0) {
 		return RECEIVE_ERROR;
 	}
-		
+
 	// send response to client that we received x bytes
 	std::string bytes_received = std::to_string(received);
 	int sent = sendto(sock_fd, bytes_received.c_str(), bytes_received.size(), 
